@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/touchardv/homewizard-prometheus-exporter/cmd"
+	"github.com/touchardv/energy-prometheus-exporter/cmd"
 )
 
 func main() {

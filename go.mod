@@ -1,4 +1,4 @@
-module github.com/touchardv/homewizard-prometheus-exporter
+module github.com/touchardv/energy-prometheus-exporter
 
 go 1.24.4
 

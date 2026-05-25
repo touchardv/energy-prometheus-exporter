@@ -6,7 +6,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cobra"
-	"github.com/touchardv/homewizard-prometheus-exporter/pkg/homewizard"
+	"github.com/touchardv/energy-prometheus-exporter/pkg/homewizard"
 )
 
 const (
