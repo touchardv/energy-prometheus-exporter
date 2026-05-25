@@ -2,9 +2,9 @@ FROM alpine:3.20
 
 ARG TARGETARCH
 ARG BUILD_DIR=build
-ARG BINARY=homewizard-prometheus-exporter-linux-${TARGETARCH}
+ARG BINARY=energy-prometheus-exporter-linux-${TARGETARCH}
 
-COPY ${BUILD_DIR}/${BINARY} /homewizard-prometheus-exporter
+COPY ${BUILD_DIR}/${BINARY} /energy-prometheus-exporter
 
 RUN addgroup -S exporter && \
 	adduser -S -D -G exporter -H -s /bin/sh exporter
@@ -15,4 +15,4 @@ USER exporter
 
 EXPOSE 8080
 
-ENTRYPOINT [ "/homewizard-prometheus-exporter", "export-metrics" ]
+ENTRYPOINT [ "/energy-prometheus-exporter", "serve" ]

@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type APIv2Client struct {
@@ -56,7 +56,7 @@ func WithToken(token string) Option {
 }
 
 func NewAPIv2Client(url string, opts ...Option) *APIv2Client {
-	logrus.Debug("Homewizard device URL=", url)
+	log.Debug("Homewizard device URL=", url)
 	c := &APIv2Client{
 		url: url,
 		client: &http.Client{
@@ -87,7 +87,7 @@ func (c *APIv2Client) CreateLocalUser(username string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusForbidden {
-		logrus.Warn("Retry later")
+		log.Warn("Retry later")
 	} else if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected server http response: %s", resp.Status)
 	}
@@ -96,7 +96,7 @@ func (c *APIv2Client) CreateLocalUser(username string) error {
 	if err != nil {
 		return err
 	}
-	logrus.Info(string(b))
+	log.Info(string(b))
 	return nil
 }
 

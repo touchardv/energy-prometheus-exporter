@@ -15,31 +15,31 @@ builds:
 
 dockers:
   - build_flag_templates:
-      - "--build-arg=BINARY=homewizard-prometheus-exporter"
+      - "--build-arg=BINARY=energy-prometheus-exporter"
       - "--build-arg=BUILD_DIR=/"
       - "--platform=linux/amd64"
     dockerfile: deployment/Dockerfile
     goarch: amd64
     ids:
-      - homewizard-prometheus-exporter
+      - energy-prometheus-exporter
     image_templates:
-      - "quay.io/touchardv/homewizard-prometheus-exporter:v{{ .Version }}-amd64"
+      - "quay.io/touchardv/energy-prometheus-exporter:v{{ .Version }}-amd64"
     use: buildx
 
   - build_flag_templates:
-      - "--build-arg=BINARY=homewizard-prometheus-exporter"
+      - "--build-arg=BINARY=energy-prometheus-exporter"
       - "--build-arg=BUILD_DIR=/"
       - "--platform=linux/arm64"
     dockerfile: deployment/Dockerfile
     goarch: arm64
     ids:
-      - homewizard-prometheus-exporter
+      - energy-prometheus-exporter
     image_templates:
-      - "quay.io/touchardv/homewizard-prometheus-exporter:v{{ .Version }}-arm64"
+      - "quay.io/touchardv/energy-prometheus-exporter:v{{ .Version }}-arm64"
     use: buildx
 
 docker_manifests:
   - image_templates:
-      - "quay.io/touchardv/homewizard-prometheus-exporter:v{{ .Version }}-amd64"
-      - "quay.io/touchardv/homewizard-prometheus-exporter:v{{ .Version }}-arm64"
-    name_template: "quay.io/touchardv/homewizard-prometheus-exporter:v{{ .Version }}"
+      - "quay.io/touchardv/energy-prometheus-exporter:v{{ .Version }}-amd64"
+      - "quay.io/touchardv/energy-prometheus-exporter:v{{ .Version }}-arm64"
+    name_template: "quay.io/touchardv/energy-prometheus-exporter:v{{ .Version }}"

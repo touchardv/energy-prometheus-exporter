@@ -2,29 +2,29 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: homewizard-prometheus-exporter
-  name: homewizard-prometheus-exporter
+    app: energy-prometheus-exporter
+  name: energy-prometheus-exporter
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: homewizard-prometheus-exporter
+      app: energy-prometheus-exporter
   strategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        app: homewizard-prometheus-exporter
+        app: energy-prometheus-exporter
     spec:
       containers:
         - name: exporter
           env:
-            - name: HOMEWIZARD_PROMETHEUS_EXPORTER_URL
+            - name: HOMEWIZARD_URL
               valueFrom:
                 secretKeyRef:
                   name: homewizard
                   key: url
-            - name: HOMEWIZARD_PROMETHEUS_EXPORTER_TOKEN
+            - name: HOMEWIZARD_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: homewizard
