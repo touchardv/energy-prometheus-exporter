@@ -6,11 +6,11 @@ metadata:
     prometheus.io/port: "8080"
     prometheus.io/scheme: http
     prometheus.io/scrape: "true"
-  name: homewizard-prometheus-exporter
+  name: energy-prometheus-exporter
 spec:
   ports:
     - name: web
       port: 8080
       protocol: TCP
   selector:
-    app: homewizard-prometheus-exporter
+    app: energy-prometheus-exporter

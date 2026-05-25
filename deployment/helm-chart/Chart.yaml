@@ -1,6 +1,6 @@
 apiVersion: v2
-name: homewizard-prometheus-exporter
+name: energy-prometheus-exporter
 type: application
 version: "0.3.0"
-description: A Prometheus metrics exporter for Homewizard devices
+description: A Prometheus exporter for home energy metrics
 appVersion: "0.3.0"

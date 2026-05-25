@@ -1,8 +1,8 @@
-BINARY := homewizard-prometheus-exporter
+BINARY := energy-prometheus-exporter
 BUILD_DIR := $(shell pwd)/build
 CHART_NAME := $(shell grep 'name:' deployment/helm-chart/Chart.yaml | awk '{print $$2}')
 CHART_VERSION := $(shell grep 'version:' deployment/helm-chart/Chart.yaml | awk '{print $$2}')
-IMAGE := quay.io/touchardv/homewizard-prometheus-exporter
+IMAGE := quay.io/touchardv/energy-prometheus-exporter
 GOARCH := $(shell go env GOARCH)
 GOOS := $(shell go env GOOS)
 SOURCES := $(shell find . -name '*.go')

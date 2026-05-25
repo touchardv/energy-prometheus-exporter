@@ -12,7 +12,7 @@ import (
 
 func NewRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "homewizard-prometheus-exporter",
+		Use:   "energy-prometheus-exporter",
 		Short: "The homewizard prometheus metrics exporter",
 	}
 

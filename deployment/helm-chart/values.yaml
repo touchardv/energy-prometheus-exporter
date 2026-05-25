@@ -2,4 +2,4 @@ homewizard:
   url: https://192.168.1.123
   token: xxx
 pod:
-  image: quay.io/touchardv/homewizard-prometheus-exporter:v0.3.0
+  image: quay.io/touchardv/energy-prometheus-exporter:v0.3.0

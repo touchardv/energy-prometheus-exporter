@@ -1,6 +1,7 @@
-# homewizard-prometheus-exporter
+# energy-prometheus-exporter
 
-A Prometheus metrics exporter for [Homewizard](https://www.homewizard.com/) devices, based on the [API v2](https://api-documentation.homewizard.com/docs/category/api-v2)
+A Prometheus exporter for home energy metrics. It supports:
+* [Homewizard](https://www.homewizard.com/) devices, based on the [API v2](https://api-documentation.homewizard.com/docs/category/api-v2).
 
 ## Building
 
@@ -13,5 +14,7 @@ The build artifacts can be cleaned by using: `make clean`.
 
 ## Configuration
 
-The `url` and `token` are required; these can be provided via command flags or environment variables.
+### Homewizard
+
+The `url` and `token` are required; these can be provided via command flags or environment variables
 
