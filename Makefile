@@ -52,7 +52,7 @@ package-image: $(BINARY)-linux-$(GOARCH)
 
 .PHONY: run
 run: $(BUILD_DIR)/$(BINARY)
-	source local.env && $(BUILD_DIR)/$(BINARY) export-metrics
+	source local.env && $(BUILD_DIR)/$(BINARY) serve
 
 .PHONY: run-image
 run-image: package-image

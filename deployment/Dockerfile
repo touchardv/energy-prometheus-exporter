@@ -15,4 +15,4 @@ USER exporter
 
 EXPOSE 8080
 
-ENTRYPOINT [ "/homewizard-prometheus-exporter", "export-metrics" ]
+ENTRYPOINT [ "/homewizard-prometheus-exporter", "serve" ]

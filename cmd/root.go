@@ -2,50 +2,46 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-)
-
-const (
-	urlProperty   = "url"
-	tokenProperty = "token"
 )
 
 func NewRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "homewizard-prometheus-exporter",
 		Short: "The homewizard prometheus metrics exporter",
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			return initializeConfig(cmd)
-		},
 	}
-	rootCmd.PersistentFlags().StringP(urlProperty, "u", "", "The URL of the Homewizard device (required)")
-	rootCmd.MarkPersistentFlagRequired(urlProperty)
-	viper.BindPFlag(urlProperty, rootCmd.PersistentFlags().Lookup(urlProperty))
 
-	rootCmd.AddCommand(createLocalUser)
-	rootCmd.AddCommand(exportMetrics)
-	rootCmd.AddCommand(listUsers)
+	rootCmd.AddCommand(newHomewizardCommand())
+	rootCmd.AddCommand(newServeCommand())
 	return rootCmd
 }
 
-func initializeConfig(cmd *cobra.Command) error {
-	viper.SetEnvPrefix("homewizard_prometheus_exporter")
-	viper.AutomaticEnv()
+func initConfig(cmd *cobra.Command, prefix string) error {
+	log.Debugf("%s with prefix: %s", cmd.Name(), prefix)
+	v := viper.New()
+	v.SetEnvPrefix(prefix)
+	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	v.AutomaticEnv()
 
-	bindFlags(cmd, viper.GetViper())
-
-	return nil
-}
-
-func bindFlags(cmd *cobra.Command, v *viper.Viper) {
-	cmd.Flags().VisitAll(func(f *pflag.Flag) {
-		// If the user hasn't set the flag, use the value from Viper (config/env)
-		if !f.Changed && v.IsSet(f.Name) {
-			val := v.Get(f.Name)
-			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+	var bindErr error
+	visitFlags := func(f *pflag.Flag) {
+		if err := v.BindPFlag(f.Name, f); err != nil {
+			bindErr = fmt.Errorf("binding flag %q: %w", f.Name, err)
+			return
 		}
-	})
+		if !f.Changed && v.IsSet(f.Name) {
+			f.Value.Set(fmt.Sprintf("%v", v.Get(f.Name)))
+		}
+	}
+
+	cmd.Flags().VisitAll(visitFlags)
+	if cmd.HasParent() {
+		cmd.Parent().PersistentFlags().VisitAll(visitFlags)
+	}
+	return bindErr
 }
