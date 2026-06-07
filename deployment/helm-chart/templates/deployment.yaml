@@ -29,6 +29,10 @@ spec:
                 secretKeyRef:
                   name: homewizard
                   key: token
+            - name: SOLAREDGE_HOST
+              value: "{{ .Values.solaredge.host }}"
+            - name: SOLAREDGE_PORT
+              value: "{{ .Values.solaredge.port }}"
           image: {{ .Values.pod.image }}
           imagePullPolicy: IfNotPresent
           ports:

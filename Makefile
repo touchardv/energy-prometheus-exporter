@@ -58,7 +58,11 @@ run: $(BUILD_DIR)/$(BINARY)
 run-image: package-image
 	docker run -it --rm -e HOMEWIZARD_PROMETHEUS_EXPORTER_URL=http://foo.bar --entrypoint=/bin/sh $(IMAGE):$(TAG)
 
+.PHONY: template-helm-chart
+template-helm-chart: package-helm-chart
+	helm template $(BUILD_DIR)/$(CHART_NAME)-$(CHART_VERSION).tgz
+
 .PHONY: test
-test:
+test: package-helm-chart
 	go test -v -cover -timeout 10s ./...
-	helm lint deployment/helm-chart
+	helm lint $(BUILD_DIR)/$(CHART_NAME)-$(CHART_VERSION).tgz
