@@ -4,7 +4,7 @@ homewizard:
   url: https://192.168.1.123
   token: xxx
 pod:
-  image: quay.io/touchardv/energy-prometheus-exporter:v0.5.0
+  image: quay.io/touchardv/energy-prometheus-exporter:v0.5.1
 solaredge:
   host: 192.168.1.124
   port: 9512
