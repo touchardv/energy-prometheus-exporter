@@ -13,6 +13,6 @@ ENV HOME=/
 
 USER exporter
 
-EXPOSE 8080
+EXPOSE 9090
 
 ENTRYPOINT [ "/energy-prometheus-exporter", "serve" ]

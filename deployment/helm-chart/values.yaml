@@ -1,3 +1,5 @@
+exporter:
+  port: 9090
 homewizard:
   url: https://192.168.1.123
   token: xxx

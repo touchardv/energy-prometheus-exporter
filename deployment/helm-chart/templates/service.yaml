@@ -3,14 +3,14 @@ kind: Service
 metadata:
   annotations:
     prometheus.io/path: /metrics
-    prometheus.io/port: "8080"
+    prometheus.io/port: "{{ .Values.exporter.port }}"
     prometheus.io/scheme: http
     prometheus.io/scrape: "true"
   name: energy-prometheus-exporter
 spec:
   ports:
     - name: web
-      port: 8080
+      port: {{ .Values.exporter.port }}
       protocol: TCP
   selector:
     app: energy-prometheus-exporter

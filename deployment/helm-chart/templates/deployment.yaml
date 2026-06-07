@@ -37,11 +37,11 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - name: web
-              containerPort: 8080
+              containerPort: "{{ .Values.exporter.port }}"
           readinessProbe:
             httpGet:
               path: /health-check
-              port: 8080
+              port: "{{ .Values.exporter.port }}"
             initialDelaySeconds: 3
           resources:
             limits:
