@@ -5,78 +5,58 @@ import (
 	"os"
 
 	"github.com/prometheus/client_golang/prometheus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/touchardv/energy-prometheus-exporter/pkg/homewizard"
 )
 
 const (
-	prefix           = "homewizard"
-	urlProperty      = "url"
-	tokenProperty    = "token"
-	usernameProperty = "username"
+	flagHomewizardURL      = "homewizard-url"
+	flagHomewizardToken    = "homewizard-token"
+	flagHomewizardUsername = "homewizard-username"
 )
-
-func registerHomewizard(cmd *cobra.Command) {
-	cmd.Flags().StringP(propertyName(urlProperty), "", "", "The URL of the Homewizard device")
-	cmd.Flags().StringP(propertyName(tokenProperty), "", "", "The user authentication token")
-}
-
-func buildCollectorForHomewizard(cmd *cobra.Command) prometheus.Collector {
-	url, err := cmd.Flags().GetString(propertyName(urlProperty))
-	if err != nil {
-		return nil
-	}
-	token, err := cmd.Flags().GetString(propertyName(tokenProperty))
-	if err != nil {
-		return nil
-	}
-	return homewizard.NewAPIv2Client(url, homewizard.WithToken(token))
-}
-
-func propertyName(n string) string {
-	return fmt.Sprintf("%s-%s", prefix, n)
-}
 
 func newHomewizardCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "homewizard",
 		Short: "Manage a Homewizard device",
 	}
-	cmd.PersistentFlags().StringP(urlProperty, "", "", "The URL of the Homewizard device")
+	cmd.PersistentFlags().StringP(flagHomewizardURL, "", "", "The URL of the Homewizard device")
 
 	createLocalUser := &cobra.Command{
 		Use: "create-user",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return initConfig(cmd, prefix)
+			return initConfig(cmd)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			url, err := cmd.Parent().Flags().GetString(urlProperty)
+			url, err := cmd.Parent().Flags().GetString(flagHomewizardURL)
 			if err != nil {
 				return err
 			}
-			username, _ := cmd.Flags().GetString(usernameProperty)
+			username, _ := cmd.Flags().GetString(flagHomewizardUsername)
 			client := homewizard.NewAPIv2Client(url)
 			return client.CreateLocalUser(username)
 		},
 	}
-	createLocalUser.Flags().StringP(usernameProperty, "", "", "The name of the user to register in the Homewizard device")
+	createLocalUser.Flags().StringP(flagHomewizardUsername, "", "", "The name of the user to register in the Homewizard device")
 
 	listUsers := &cobra.Command{
 		Use:   "list-users",
 		Short: "List registered user(s)",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return initConfig(cmd, prefix)
+			return initConfig(cmd)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			url, err := cmd.Parent().Flags().GetString(urlProperty)
+			url, err := cmd.Parent().Flags().GetString(flagHomewizardURL)
 			if err != nil {
 				return err
 			}
-			token, err := cmd.Flags().GetString(tokenProperty)
+			token, err := cmd.Flags().GetString(flagHomewizardToken)
 			if err != nil {
 				return err
 			}
-			client := homewizard.NewAPIv2Client(url, homewizard.WithToken(token))
+			client := homewizard.NewAuthenticatedAPIv2Client(url, token)
 			users, err := client.ListUsers()
 			if err != nil {
 				return err
@@ -89,9 +69,33 @@ func newHomewizardCommand() *cobra.Command {
 			return nil
 		},
 	}
-	listUsers.Flags().StringP(tokenProperty, "", "", "The user authentication token")
+	listUsers.Flags().StringP(flagHomewizardToken, "", "", "Homewizard user authentication token")
 
 	cmd.AddCommand(createLocalUser)
 	cmd.AddCommand(listUsers)
 	return cmd
+}
+
+func addHomewizardCollectorFlags(fs *pflag.FlagSet) {
+	fs.StringP(flagHomewizardURL, "", "", "Homewizard device URL")
+	fs.StringP(flagHomewizardToken, "", "", "Homewizard user authentication token")
+}
+
+func addHomewizardCollector(fs *pflag.FlagSet, reg *prometheus.Registry) error {
+	url, err := fs.GetString(flagHomewizardURL)
+	if err != nil {
+		return err
+	}
+	if url == "" {
+		log.Println("homewizard: url not set, collector disabled")
+		return nil
+	}
+	log.Printf("homewizard: collector enabled (url: %s)", url)
+	token, err := fs.GetString(flagHomewizardToken)
+	if err != nil {
+		return err
+	}
+	client := homewizard.NewAuthenticatedAPIv2Client(url, token)
+	reg.MustRegister(client)
+	return nil
 }

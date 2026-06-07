@@ -49,13 +49,7 @@ type measurement struct {
 	External          []externalMeasurement `json:"external"`
 }
 
-type Option func(*APIv2Client)
-
-func WithToken(token string) Option {
-	return func(c *APIv2Client) { c.token = token }
-}
-
-func NewAPIv2Client(url string, opts ...Option) *APIv2Client {
+func NewAPIv2Client(url string) *APIv2Client {
 	log.Debug("Homewizard device URL=", url)
 	c := &APIv2Client{
 		url: url,
@@ -65,9 +59,12 @@ func NewAPIv2Client(url string, opts ...Option) *APIv2Client {
 			},
 		},
 	}
-	for _, opt := range opts {
-		opt(c)
-	}
+	return c
+}
+
+func NewAuthenticatedAPIv2Client(url string, token string) *APIv2Client {
+	c := NewAPIv2Client(url)
+	c.token = token
 	return c
 }
 

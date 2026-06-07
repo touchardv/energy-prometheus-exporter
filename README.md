@@ -2,6 +2,7 @@
 
 A Prometheus exporter for home energy metrics. It supports:
 * [Homewizard](https://www.homewizard.com/) devices, based on the [API v2](https://api-documentation.homewizard.com/docs/category/api-v2).
+* [Solaredge](https://www.solaredge.com/) inverter with/without battery.
 
 ## Building
 
@@ -14,7 +15,5 @@ The build artifacts can be cleaned by using: `make clean`.
 
 ## Configuration
 
-### Homewizard
-
-The `url` and `token` are required; these can be provided via command flags or environment variables
-
+The configuration can be provided via command flags or environment variables.
+Use the `--help` command line flag to see the usage.

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -21,10 +20,9 @@ func NewRootCommand() *cobra.Command {
 	return rootCmd
 }
 
-func initConfig(cmd *cobra.Command, prefix string) error {
-	log.Debugf("%s with prefix: %s", cmd.Name(), prefix)
+func initConfig(cmd *cobra.Command) error {
 	v := viper.New()
-	v.SetEnvPrefix(prefix)
+	v.SetEnvPrefix("")
 	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	v.AutomaticEnv()
 

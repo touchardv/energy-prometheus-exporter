@@ -1,36 +1,86 @@
 package cmd
 
 import (
+	"context"
+	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
+const flagListenAddr = "listen"
+
+// newServeCommand returns the top-level "serve" command. It registers all
+// known collectors and exposes them together on a single /metrics endpoint.
 func newServeCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "serve",
-		Short: "Serve Prometheus exported metrics",
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			return initConfig(cmd, "")
+		Short: "Serve metrics from all configured devices via HTTP",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return initConfig(cmd)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			reg := prometheus.NewRegistry()
-
-			c := buildCollectorForHomewizard(cmd)
-			if c != nil {
-				reg.Register(c)
+			listen, err := cmd.Flags().GetString(flagListenAddr)
+			if err != nil {
+				return err
 			}
 
-			http.HandleFunc("/health-check", healthCheck)
-			http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
-			http.ListenAndServe(":8080", nil)
-			return nil
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			reg := prometheus.NewRegistry()
+			err = addSolaredgeCollector(cmd.Flags(), reg, ctx)
+			if err != nil {
+				return err
+			}
+			err = addHomewizardCollector(cmd.Flags(), reg)
+			if err != nil {
+				return err
+			}
+
+			return runHTTP(listen, reg)
 		},
 	}
-	registerHomewizard(cmd)
+
+	cmd.Flags().StringP(flagListenAddr, "l", ":9090", "HTTP listen address")
+
+	// Embed each collector's flags directly on "serve" so the user can configure
+	addHomewizardCollectorFlags(cmd.Flags())
+	addSolaredgeCollectorFlags(cmd.Flags())
+
 	return cmd
+}
+
+// runHTTP starts the HTTP server and blocks until SIGTERM/SIGINT.
+func runHTTP(addr string, reg *prometheus.Registry) error {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health-check", healthCheck)
+	mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+
+	srv := &http.Server{Addr: addr, Handler: mux}
+
+	go func() {
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+		<-quit
+		log.Info("Shutting down…")
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		srv.Shutdown(ctx)
+	}()
+
+	log.Info("http server listening on ", srv.Addr)
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		return fmt.Errorf("http server: %w", err)
+	}
+	return nil
 }
 
 func healthCheck(w http.ResponseWriter, r *http.Request) {
