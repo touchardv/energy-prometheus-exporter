@@ -33,6 +33,8 @@ spec:
               value: "{{ .Values.solaredge.host }}"
             - name: SOLAREDGE_PORT
               value: "{{ .Values.solaredge.port }}"
+            - name: SOLAREDGE_MIN_POLL_INTERVAL
+              value: "{{ .Values.solaredge.minPollInterval }}"
           image: {{ .Values.pod.image }}
           imagePullPolicy: IfNotPresent
           ports:
