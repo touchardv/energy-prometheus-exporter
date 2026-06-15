@@ -170,7 +170,7 @@ func isTransactionIDError(err error) bool {
 // poll reads both models and updates the snapshot atomically.
 // Caller must hold c.mu.
 func (c *Collector) poll() error {
-	invFields, err := c.reader.Read(sunspec.InverterModel(40069))
+	invFields, err := c.reader.Read(sunspec.InverterModel())
 	if err != nil {
 		if isTransactionIDError(err) {
 			log.Printf("solaredge: stale transaction ID on inverter read — reconnecting")
@@ -178,7 +178,7 @@ func (c *Collector) poll() error {
 		return fmt.Errorf("inverter: %w", err)
 	}
 
-	meterFields, err := c.reader.Read(sunspec.MeterModel(sunspec.MeterBase(c.meterSlot)))
+	meterFields, err := c.reader.Read(sunspec.MeterModel(c.meterSlot))
 	if err != nil {
 		if isTransactionIDError(err) {
 			log.Printf("solaredge: stale transaction ID on meter read — reconnecting")
@@ -193,7 +193,7 @@ func (c *Collector) poll() error {
 	}
 
 	// Battery is non-fatal — not all installations have one.
-	battFields, err := c.reader.Read(sunspec.BatteryDataModel(sunspec.BatteryBaseAddress(c.batterySlot)))
+	battFields, err := c.reader.Read(sunspec.BatteryDataModel(c.batterySlot))
 	if err != nil {
 		if !isTransactionIDError(err) {
 			log.Printf("solaredge: battery poll error: %v", err)
@@ -305,7 +305,7 @@ func allDescs() []*prometheus.Desc {
 // logDeviceInfo reads the SunSpec Common block and logs the inverter identity.
 // Called once after each successful Modbus connect. Failures are non-fatal.
 func logDeviceInfo(reader *sunspec.Reader) {
-	fields, err := reader.Read(sunspec.CommonModel(40000))
+	fields, err := reader.Read(sunspec.CommonModel())
 	if err != nil {
 		log.Printf("solaredge: could not read device info: %v", err)
 		return
@@ -326,7 +326,7 @@ func logDeviceInfo(reader *sunspec.Reader) {
 // logMeterInfo reads the meter Common block (embedded at the start of the
 // meter model block) and logs its identity. Failures are non-fatal.
 func logMeterInfo(reader *sunspec.Reader, slot int) {
-	fields, err := reader.Read(sunspec.MeterModel(sunspec.MeterBase(slot)))
+	fields, err := reader.Read(sunspec.MeterModel(slot))
 	if err != nil {
 		log.Printf("solaredge: could not read meter info: %v", err)
 		return
@@ -348,7 +348,7 @@ func logMeterInfo(reader *sunspec.Reader, slot int) {
 // logBatteryInfo reads the battery nameplate block and logs its identity.
 // Failures are non-fatal — not all installations have a battery.
 func logBatteryInfo(reader *sunspec.Reader, slot int) {
-	fields, err := reader.Read(sunspec.BatteryInfoModel(sunspec.BatteryBaseAddress(slot)))
+	fields, err := reader.Read(sunspec.BatteryInfoModel(slot))
 	if err != nil {
 		log.Printf("solaredge: battery not available (slot %d): %v", slot, err)
 		return

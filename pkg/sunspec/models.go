@@ -8,12 +8,17 @@ package sunspec
 // Absolute Modbus address = model.BaseAddress + field.Offset
 // ─────────────────────────────────────────────────────────────────
 
+const (
+	CommonBaseAddress   uint16 = 40000
+	InverterBaseAddress uint16 = 40069
+)
+
 // CommonModel returns the SunSpec Common Block definition.
 // Default base address: 40000 (base-0).
-func CommonModel(baseAddr uint16) *Model {
+func CommonModel() *Model {
 	return &Model{
 		Name:        "Common",
-		BaseAddress: baseAddr,
+		BaseAddress: CommonBaseAddress,
 		Fields: []RegisterDef{
 			{0, 2, "C_SunSpec_ID", TypeUint32, "", "SunSpec identifier (0x53756e53 = 'SunS')", "", 0},
 			{2, 1, "C_SunSpec_DID", TypeUint16, "", "Common Model Block ID (1)", "", 0},
@@ -29,10 +34,10 @@ func CommonModel(baseAddr uint16) *Model {
 
 // InverterModel returns the SunSpec Inverter Model block (IDs 101/102/103).
 // Default base address: 40069 (base-0).
-func InverterModel(baseAddr uint16) *Model {
+func InverterModel() *Model {
 	return &Model{
 		Name:        "Inverter",
-		BaseAddress: baseAddr,
+		BaseAddress: InverterBaseAddress,
 		Fields: []RegisterDef{
 			{0, 1, "C_SunSpec_DID", TypeUint16, "", "101=single, 102=split, 103=three-phase", "", 0},
 			{1, 1, "C_SunSpec_Length", TypeUint16, "registers", "Model block length (50)", "", 0},
@@ -82,10 +87,10 @@ func InverterModel(baseAddr uint16) *Model {
 //	Meter 3 (standard):  40469 (base-0)
 //
 // Pass the appropriate base address for your installation.
-func MeterModel(baseAddr uint16) *Model {
+func MeterModel(slot int) *Model {
 	return &Model{
 		Name:        "Meter",
-		BaseAddress: baseAddr,
+		BaseAddress: meterBase(slot),
 		Fields: []RegisterDef{
 			// ── Common Block ─────────────────────────────────────────────────
 			{0, 1, "C_SunSpec_DID", TypeUint16, "", "Common Model Block ID (1)", "", 0},
@@ -170,7 +175,7 @@ func MeterModel(baseAddr uint16) *Model {
 }
 
 // meterBase maps slot number to 0-based Modbus address.
-func MeterBase(slot int) uint16 {
+func meterBase(slot int) uint16 {
 	switch slot {
 	case 2:
 		return 40295
@@ -181,9 +186,9 @@ func MeterBase(slot int) uint16 {
 	}
 }
 
-// BatteryBaseAddress returns the 0-based Modbus base address for a battery slot.
+// batteryBaseAddress returns the 0-based Modbus base address for a battery slot.
 // Slot 1 → 0xE100, Slot 2 → 0xE200.
-func BatteryBaseAddress(slot int) uint16 {
+func batteryBaseAddress(slot int) uint16 {
 	if slot == 2 {
 		return 0xE200
 	}
@@ -198,10 +203,10 @@ func BatteryBaseAddress(slot int) uint16 {
 // which include manufacturer, model, serial, firmware, and rated capacity.
 // It is kept separate from BatteryDataModel to avoid reading across the
 // 32-register gap at 0x4C–0x6B that causes timeouts on some firmware versions.
-func BatteryInfoModel(baseAddr uint16) *Model {
+func BatteryInfoModel(slot int) *Model {
 	return &Model{
 		Name:        "BatteryInfo",
-		BaseAddress: baseAddr,
+		BaseAddress: batteryBaseAddress(slot),
 		WordOrder:   LowWordFirst,
 		Fields: []RegisterDef{
 			// ── Nameplate / identification ────────────────────────────────
@@ -225,11 +230,11 @@ func BatteryInfoModel(baseAddr uint16) *Model {
 // This model covers the contiguous live data registers (0x6C–0x8D),
 // which include temperature, voltage, current, power, energy counters,
 // SoC, SoH, and status. It starts after the 32-register gap at 0x4C–0x6B.
-func BatteryDataModel(baseAddr uint16) *Model {
+func BatteryDataModel(slot int) *Model {
 	// Live data starts at offset 0x6C from the battery base address.
 	return &Model{
 		Name:        "BatteryData",
-		BaseAddress: baseAddr + 0x6C,
+		BaseAddress: batteryBaseAddress(slot) + 0x6C,
 		WordOrder:   LowWordFirst,
 		Fields: []RegisterDef{
 			// ── Temperature ───────────────────────────────────────────────

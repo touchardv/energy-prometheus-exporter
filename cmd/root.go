@@ -17,6 +17,7 @@ func NewRootCommand() *cobra.Command {
 
 	rootCmd.AddCommand(newHomewizardCommand())
 	rootCmd.AddCommand(newServeCommand())
+	rootCmd.AddCommand(newSolaredgeCommand())
 	return rootCmd
 }
 
