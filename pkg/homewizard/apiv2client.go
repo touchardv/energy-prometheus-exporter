@@ -7,9 +7,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
+	"regexp"
 
 	log "github.com/sirupsen/logrus"
 )
+
+// localUsernameRe validates the suffix after "local/" per the API v2 spec:
+// 1–40 characters from the set [a-zA-Z0-9\-_/\\# ].
+var localUsernameRe = regexp.MustCompile(`^[a-zA-Z0-9\-_/\\# ]{1,40}$`)
 
 type APIv2Client struct {
 	client   *http.Client
@@ -54,6 +60,7 @@ func NewAPIv2Client(url string) *APIv2Client {
 	c := &APIv2Client{
 		url: url,
 		client: &http.Client{
+			Timeout: 10 * time.Second,
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			},
@@ -69,9 +76,16 @@ func NewAuthenticatedAPIv2Client(url string, token string) *APIv2Client {
 }
 
 func (c *APIv2Client) CreateLocalUser(username string) error {
-	body := fmt.Sprintf(`{ "name": "local/%s" }`, username)
-	jsonBody := bytes.NewBufferString(body)
-	req, err := http.NewRequest(http.MethodPost, c.urlWithPath("api/user"), jsonBody)
+	if !localUsernameRe.MatchString(username) {
+		return fmt.Errorf("invalid username %q: must be 1-40 characters matching [a-zA-Z0-9-_/\\# ]", username)
+	}
+	payload, err := json.Marshal(struct {
+		Name string `json:"name"`
+	}{Name: "local/" + username})
+	if err != nil {
+		return fmt.Errorf("encoding request body: %w", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, c.urlWithPath("api/user"), bytes.NewReader(payload))
 	if err != nil {
 		return err
 	}

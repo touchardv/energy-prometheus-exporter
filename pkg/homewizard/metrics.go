@@ -185,19 +185,5 @@ func (c APIv2Client) Describe(ch chan<- *prometheus.Desc) {
 	ch <- currentL1ADesc
 	ch <- currentL2ADesc
 	ch <- currentL3ADesc
-	c.describeExternalDevices(ch)
-}
-
-func (c APIv2Client) describeExternalDevices(ch chan<- *prometheus.Desc) {
-	m, err := c.GetMeasurement()
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
-	for _, em := range m.External {
-		if em.Type == "gas_meter" {
-			ch <- extGasMeterDesc
-		}
-	}
+	ch <- extGasMeterDesc
 }
